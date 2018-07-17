@@ -1,14 +1,106 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`A test 1`] = `
+exports[`Complex test for PropTypes 1`] = `
+"MyComponent.propTypes = {
+  foo: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.arrayOf(
+      PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+    ),
+    PropTypes.func,
+    PropTypes.shape({
+      mandatory: PropTypes.bool.isRequired,
+      bar: PropTypes.string,
+      hello: PropTypes.string
+    })
+  ]),
+  bax: PropTypes.arrayOf(PropTypes.string),
+  bar: PropTypes.array,
+  bool: PropTypes.bool
+}
+"
+`;
+
+exports[`Complex test for TypeScript 1`] = `
+"{
+  foo?:
+    | null
+    | string
+    | number
+    | Array<number | string>
+    | { (): any }
+    | {
+        mandatory: boolean,
+        bar?: string,
+        hello?: string
+      },
+  bax?: Array<string>,
+  bar?: Array<any>,
+  bool?: boolean
+}"
+`;
+
+exports[`Complex test for TypeScript 2`] = `
+"interface IProjectNameFoo {
+  mandatory: boolean;
+  bar?: string;
+  hello?: string;
+}
+
+interface IProjectName {
+  foo?:
+    | null
+    | string
+    | number
+    | Array<number | string>
+    | { (): any }
+    | IProjectNameFoo;
+  bax?: Array<string>;
+  bar?: Array<any>;
+  bool?: boolean;
+}
+
+export type ProjectName = IProjectName
+"
+`;
+
+exports[`Complex test for Vue.js validation 1`] = `
+"{
+  foo: [String, Number, Array, Function, Object],
+  bax: Array,
+  bar: Array,
+  bool: Boolean
+}
+"
+`;
+
+exports[`Simple test for PropTypes 1`] = `
+"MyComponent.propTypes = {
+  firstName: PropTypes.string.isRequired,
+  lastName: PropTypes.string
+}
+"
+`;
+
+exports[`Simple test for TypeScript 1`] = `
 "{
   firstName: string,
   lastName?: string
 }"
 `;
 
-exports[`Another test 1`] = `
-"{
-  foo: string | number | Array<number>
-}"
+exports[`Simple test for TypeScript 2`] = `
+"interface IProjectName {
+  firstName: string;
+  lastName?: string;
+}
+
+export type ProjectName = IProjectName
+"
+`;
+
+exports[`Simple test for Vue.js validation 1`] = `
+"{ firstName: { type: String, required: true }, lastName: String }
+"
 `;

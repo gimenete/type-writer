@@ -6,7 +6,7 @@ const prettierOptions = {
   semi: false
 }
 
-class TypeWriter {
+class Typewriter {
   constructor() {
     this.keypaths = {}
   }
@@ -57,11 +57,6 @@ class TypeWriter {
 
   addDocument(doc) {
     this.calculateType('', doc)
-  }
-
-  addRootField(keyPath, type, required) {
-    this.keypaths[''].object[keyPath] = required
-    this.keypaths[keyPath] = { [type]: {} }
   }
 
   createAST(prefix) {
@@ -290,4 +285,4 @@ class TypeWriter {
   }
 }
 
-module.exports = TypeWriter
+module.exports = Typewriter

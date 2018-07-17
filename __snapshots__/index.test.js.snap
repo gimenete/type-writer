@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`A test 1`] = `
+"{
+  firstName: string,
+  lastName?: string
+}"
+`;
+
+exports[`Another test 1`] = `
+"{
+  foo: string | number | Array<number>
+}"
+`;

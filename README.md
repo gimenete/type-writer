@@ -1,11 +1,11 @@
-# typewriter
+# 📇 Typewriter
 
 Generate type definitions for TypeScript, Flow, PropTypes, etc. by using examples of the data
 
 ## Example
 
 ```javascript
-const tw = new TypeWriter()
+const tw = new Typewriter()
 tw.addDocument({ foo: 'bar' })
 tw.addDocument({ foo: 1 })
 tw.addDocument({ foo: [1, 2, 3] })

@@ -1,10 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Complex test for PropTypes 1`] = `
-"MyComponent.propTypes = {
+"{
   foo: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
+    PropTypes.bool,
     PropTypes.arrayOf(
       PropTypes.oneOfType([PropTypes.number, PropTypes.string])
     ),
@@ -17,9 +18,11 @@ exports[`Complex test for PropTypes 1`] = `
   ]),
   bax: PropTypes.arrayOf(PropTypes.string),
   bar: PropTypes.array,
-  bool: PropTypes.bool
-}
-"
+  mixed: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+  ),
+  empty: PropTypes.object
+}"
 `;
 
 exports[`Complex test for TypeScript 1`] = `
@@ -28,6 +31,7 @@ exports[`Complex test for TypeScript 1`] = `
     | null
     | string
     | number
+    | boolean
     | Array<number | string>
     | { (): any }
     | {
@@ -37,70 +41,90 @@ exports[`Complex test for TypeScript 1`] = `
       },
   bax?: Array<string>,
   bar?: Array<any>,
-  bool?: boolean
+  mixed?: Array<number | string>,
+  empty?: {}
 }"
 `;
 
 exports[`Complex test for TypeScript 2`] = `
-"interface IProjectNameFoo {
-  mandatory: boolean;
-  bar?: string;
-  hello?: string;
+"type ProjectNameFoo = {
+  mandatory: boolean,
+  bar?: string,
+  hello?: string
 }
 
-interface IProjectName {
+type ProjectNameEmpty = {}
+
+type ProjectName = {
   foo?:
     | null
     | string
     | number
+    | boolean
     | Array<number | string>
     | { (): any }
-    | IProjectNameFoo;
-  bax?: Array<string>;
-  bar?: Array<any>;
-  bool?: boolean;
+    | ProjectNameFoo,
+  bax?: Array<string>,
+  bar?: Array<any>,
+  mixed?: Array<number | string>,
+  empty?: ProjectNameEmpty
 }
-
-export type ProjectName = IProjectName
 "
 `;
 
 exports[`Complex test for Vue.js validation 1`] = `
 "{
-  foo: [String, Number, Array, Function, Object],
+  foo: [String, Number, Boolean, Array, Function, Object],
   bax: Array,
   bar: Array,
-  bool: Boolean
-}
-"
+  mixed: Array,
+  empty: Object
+}"
 `;
 
+exports[`Empty object for PropTypes 1`] = `""`;
+
 exports[`Simple test for PropTypes 1`] = `
-"MyComponent.propTypes = {
-  firstName: PropTypes.string.isRequired,
-  lastName: PropTypes.string
-}
-"
+"{
+  \\"first name\\": PropTypes.string.isRequired,
+  \\"last name\\": PropTypes.string
+}"
 `;
 
 exports[`Simple test for TypeScript 1`] = `
 "{
-  firstName: string,
-  lastName?: string
+  \\"first name\\": string,
+  \\"last name\\"?: string
 }"
 `;
 
 exports[`Simple test for TypeScript 2`] = `
-"interface IProjectName {
-  firstName: string;
-  lastName?: string;
+"type ProjectName = {
+  \\"first name\\": string,
+  \\"last name\\"?: string
 }
-
-export type ProjectName = IProjectName
 "
 `;
 
 exports[`Simple test for Vue.js validation 1`] = `
-"{ firstName: { type: String, required: true }, lastName: String }
+"{
+  \\"first name\\": { type: String, required: true },
+  \\"last name\\": String
+}"
+`;
+
+exports[`Union types for root definition for TypeScript 1`] = `
+"| {
+      foo: string
+    }
+  | Array<string>"
+`;
+
+exports[`Union types for root definition for TypeScript 2`] = `
+"type ProjectName = {
+  foo: string
+}
+
+type Root = ProjectName | Array<string>
 "
 `;

@@ -50,9 +50,9 @@ class Typewriter {
     this.keypaths[keypath] = current
   }
 
-  interfaceName(key) {
+  typeName(key) {
     const name = camelcase((this.prefix + ' ' + key).replace(/\[\]/g, 'Value'))
-    return 'I' + name.substring(0, 1).toUpperCase() + name.substring(1)
+    return name.substring(0, 1).toUpperCase() + name.substring(1)
   }
 
   addDocument(doc) {
@@ -61,21 +61,21 @@ class Typewriter {
 
   createAST(prefix) {
     this.prefix = prefix
-    this.interfaces = []
+    this.types = []
     const root = this.createASTForKeypath('')
     return {
-      interfaces: this.interfaces,
+      types: this.types,
       root
     }
   }
 
   createASTForKeypath(keypath) {
     const current = this.keypaths[keypath] || {} // can be undefined for an empty array
-    // create interfaces
+    // create types
     Object.keys(current).forEach(type => {
       if (type !== 'object') return
-      const name = this.interfaceName(keypath)
-      this.interfaces.push({
+      const name = this.typeName(keypath)
+      this.types.push({
         name,
         fields: Object.keys(current[type]).map(key => {
           return {
@@ -92,7 +92,7 @@ class Typewriter {
       if (type === 'object') {
         return {
           type: 'object',
-          interfaceName: this.interfaceName(keypath)
+          typeName: this.typeName(keypath)
         }
       }
       if (type === 'array') {
@@ -107,7 +107,7 @@ class Typewriter {
     })
   }
 
-  createTypeScript(prefix) {
+  createTypeScript({ prefix = 'I', rootTypeName = 'Root' }) {
     const ast = this.createAST(prefix)
     const codeForArray = (arr) =>
       arr.length === 0 ? 'any' : arr.map(codeForValue).join(' | ')
@@ -116,18 +116,18 @@ class Typewriter {
         return `Array<${codeForArray(value.values)}>`
       }
       if (value.type === 'object') {
-        return value.interfaceName
+        return value.typeName
       }
       if (value.type === 'function') {
         return '{ (): any }'
       }
       return value.type
     }
-    const code = `${ast.interfaces
+    let code = `${ast.types
       .map(interfaceObj => {
         const { name, fields } = interfaceObj
         return `
-          interface ${name} {
+          type ${name} = {
             ${fields
               .map(
                 field =>
@@ -140,8 +140,11 @@ class Typewriter {
         `
       })
       .join('\n')}
-    export type ${prefix} = ${codeForArray(ast.root)}
     `
+    const rootTypeValue = codeForArray(ast.root)
+    if (rootTypeName !== rootTypeValue) {
+      code += `\n type ${rootTypeName} = ${rootTypeValue}`
+    }
     return prettier.format(code, prettierOptions)
   }
 
@@ -154,8 +157,8 @@ class Typewriter {
         return `Array<${codeForArray(value.values)}>`
       }
       if (value.type === 'object') {
-        const interfaceName = value.interfaceName
-        const definition = this.interfaces.find(i => i.name === interfaceName)
+        const typeName = value.typeName
+        const definition = this.types.find(i => i.name === typeName)
         const fields = definition.fields
         return `{
           ${fields
@@ -173,9 +176,7 @@ class Typewriter {
       }
       return value.type
     }
-    const PREFIX = 'type Foo ='
-    const code = PREFIX + codeForArray(ast.root)
-    return prettier.format(code, prettierOptions).replace(PREFIX, '').trim()
+    return this._inlinedVersion(codeForArray(ast.root), prettierOptions, 'type Foo =')
   }
 
   _filterNotNullables(field) {
@@ -191,7 +192,14 @@ class Typewriter {
     }
   }
 
-  createPropTypes(initialCode) {
+  _inlinedVersion(code, prettierOptions, prefix = 'const foo =') {
+    let formatted = prettier.format(prefix + code, prettierOptions)
+    formatted = formatted.substring(prefix.length).trim()
+    if (formatted.endsWith(';')) return formatted.substring(0, formatted.length - 1)
+    return formatted
+  }
+
+  createPropTypes() {
     const ast = this.createAST('')
     const codeForArray = (values) =>
       values.length === 1
@@ -219,8 +227,8 @@ class Typewriter {
         return 'PropTypes.func'
       }
       if (value.type === 'object') {
-        const interfaceName = value.interfaceName
-        const definition = this.interfaces.find(i => i.name === interfaceName)
+        const typeName = value.typeName
+        const definition = this.types.find(i => i.name === typeName)
         const fields = definition.fields
         if (fields.length === 0) {
           return isRoot ? '' : 'PropTypes.object'
@@ -242,17 +250,16 @@ class Typewriter {
         ? codeForValue(ast.root[0], true)
         : codeForArray(ast.root)
 
-    return code
-      ? prettier.format(`${initialCode} = ${code}`, prettierOptions)
-      : ''
+    if (!code) return code
+    return this._inlinedVersion(code, prettierOptions)
   }
 
   createVueValidation() {
     const ast = this.createAST('')
     if (ast.root.length !== 1 || ast.root[0].type !== 'object') return ''
     const root = ast.root[0]
-    const interfaceName = root.interfaceName
-    const definition = this.interfaces.find(i => i.name === interfaceName)
+    const typeName = root.typeName
+    const definition = this.types.find(i => i.name === typeName)
     const fields = definition.fields
 
     const codeForSingleValue = (value, required) => {
@@ -280,8 +287,7 @@ class Typewriter {
     }
 
     const code = `{ ${fields.map(field => codeForField(field)).join(', ')} }`
-    const prefix = 'const foo = '
-    return prettier.format(prefix + code, prettierOptions).substring(prefix.length)
+    return this._inlinedVersion(code, prettierOptions)
   }
 }
 

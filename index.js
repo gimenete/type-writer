@@ -6,12 +6,15 @@ const prettierOptions = {
   semi: false
 }
 
+const objectName = Symbol('name')
+
 class Typewriter {
   constructor() {
     this.keypaths = {}
+    this.namedTypes = {}
   }
 
-  calculateType(keypath, data) {
+  calculateType(keypath, data, namedKeyPaths) {
     let type = typeof data
     let paths = {}
     if (type === 'object') {
@@ -20,15 +23,19 @@ class Typewriter {
       } else if (Array.isArray(data)) {
         type = 'array'
         paths = { '[]': true }
-        data.map(value => this.calculateType(keypath + '[]', value))
+        data.map(value => this.calculateType(keypath + '[]', value, namedKeyPaths))
       } else {
         paths = Object.keys(data).reduce((obj, key) => {
           obj[key] = true
           return obj
         }, {})
         Object.keys(data).forEach(key =>
-          this.calculateType(keypath ? keypath + '.' + key : key, data[key])
+          this.calculateType(keypath ? keypath + '.' + key : key, data[key], namedKeyPaths)
         )
+        const typeName = namedKeyPaths[keypath]
+        if (typeName) {
+          paths[objectName] = typeName
+        }
       }
     }
     const current = this.keypaths[keypath] || {}
@@ -55,8 +62,8 @@ class Typewriter {
     return name.substring(0, 1).toUpperCase() + name.substring(1)
   }
 
-  addDocument(doc) {
-    this.calculateType('', doc)
+  addDocument(doc, namedKeyPaths = {}) {
+    this.calculateType('', doc, namedKeyPaths)
   }
 
   createAST(prefix) {

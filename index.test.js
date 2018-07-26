@@ -69,3 +69,10 @@ test('Empty object for PropTypes', () => {
   emptyObject.addDocument({})
   expect(emptyObject.createPropTypes('MyComponent.propTypes ')).toMatchSnapshot()
 });
+
+test('Named types', () => {
+  const namedTypes = new Typewriter()
+  namedTypes.addDocument({ payload: { issue: { title: 'Issue titlle' }} }, { 'payload.issue': 'Issue' })
+  expect(namedTypes.createTypeScript({ prefix: 'ProjectName', rootTypeName: 'ProjectName' })).toMatchSnapshot()
+});
+

@@ -84,6 +84,21 @@ exports[`Complex test for Vue.js validation 1`] = `
 
 exports[`Empty object for PropTypes 1`] = `""`;
 
+exports[`Named types 1`] = `
+"type ProjectNamePayloadIssue = {
+  title: string
+}
+
+type ProjectNamePayload = {
+  issue: ProjectNamePayloadIssue
+}
+
+type ProjectName = {
+  payload: ProjectNamePayload
+}
+"
+`;
+
 exports[`Simple test for PropTypes 1`] = `
 "{
   \\"first name\\": PropTypes.string.isRequired,

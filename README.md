@@ -38,7 +38,8 @@ Output:
 
 ```
 # TypeScript
-type ProjectNameUser = { name: string }type ProjectName = {
+type ProjectNameUser = { name: string }
+type ProjectName = {
   user: ProjectNameUser,
   foo: string | number | Array<number>
 }
@@ -55,7 +56,8 @@ PropTypes.shape({
   user: PropTypes.shape({ name: PropTypes.string.isRequired }).isRequired,
   foo: PropTypes.oneOfType(
     PropTypes.string,
-    PropTypes.number,    PropTypes.arrayOf(PropTypes.number)
+    PropTypes.number,
+    PropTypes.arrayOf(PropTypes.number)
   ).isRequired
 })
 

@@ -1,78 +1,63 @@
-const Typewriter = require('./');
+const Typewriter = require('./')
 
-const simpleTypes = new Typewriter()
-simpleTypes.addDocument({ "first name": 'Marie', "last name": 'Curie' })
-simpleTypes.addDocument({ "first name": 'Ada' })
+describe('Simple types', () => {
+  const simpleTypes = new Typewriter()
+  simpleTypes.add([{ 'first name': 'Marie', 'last name': 'Curie' }, { 'first name': 'Ada' }])
 
-const complexTypes = new Typewriter()
-// union types
-complexTypes.addDocument({ foo: null })
-complexTypes.addDocument({ foo: 'string' })
-complexTypes.addDocument({ foo: 1 })
-complexTypes.addDocument({ foo: true })
-// empty array
-complexTypes.addDocument({ foo: [] })
-// single array type
-complexTypes.addDocument({ bax: ['string'] }) // array with a single value
-// union of array types
-complexTypes.addDocument({ foo: [1, 2, 3] })
-complexTypes.addDocument({ foo: ['a', 'b', 'c'] })
-complexTypes.addDocument({ foo: () => {} })
-// nested typing, with a common field
-complexTypes.addDocument({ foo: { mandatory: true, bar: 'baz' } })
-complexTypes.addDocument({ foo: { mandatory: true, hello: 'world' } })
-// empty array with no typing information
-complexTypes.addDocument({ bar: [] })
-// mixed array
-complexTypes.addDocument({ mixed: [1, 2, 'a', 'b'] })
+  test('Simple test for TypeScript', () => {
+    expect(simpleTypes.generate('typescript', { inlined: true })).toMatchSnapshot()
+    expect(simpleTypes.generate('typescript')).toMatchSnapshot()
+  })
 
-// empty object
-complexTypes.addDocument({ empty: {} })
+  test('Simple test for PropTypes', () => {
+    expect(simpleTypes.generate('propTypes', { inlined: true })).toMatchSnapshot()
+    expect(simpleTypes.generate('propTypes')).toMatchSnapshot()
+  })
+})
 
-test('Simple test for TypeScript', () => {
-  expect(simpleTypes.createInlinedTypeScript()).toMatchSnapshot()
-  expect(simpleTypes.createTypeScript({ prefix: 'ProjectName', rootTypeName: 'ProjectName' })).toMatchSnapshot()
-});
+describe('Complex types', () => {
+  const complexTypesExamples = []
+  // union types
+  complexTypesExamples.push({ foo: null })
+  complexTypesExamples.push({ foo: 'string' })
+  complexTypesExamples.push({ foo: 1 })
+  complexTypesExamples.push({ foo: true })
+  // empty array
+  complexTypesExamples.push({ foo: [] })
+  // single array type
+  complexTypesExamples.push({ bax: ['string'] }) // array with a single value
+  // union of array types
+  complexTypesExamples.push({ foo: [1, 2, 3] })
+  complexTypesExamples.push({ foo: ['a', 'b', 'c'] })
+  complexTypesExamples.push({ foo: () => {} })
+  // nested typing, with a common field
+  complexTypesExamples.push({ foo: { mandatory: true, bar: 'baz' } })
+  complexTypesExamples.push({ foo: { mandatory: true, hello: 'world' } })
+  // empty array with no typing information
+  complexTypesExamples.push({ bar: [] })
+  // mixed array
+  complexTypesExamples.push({ mixed: [1, 2, 'a', 'b'] })
 
-test('Complex test for TypeScript', () => {
-  expect(complexTypes.createInlinedTypeScript()).toMatchSnapshot()
-  expect(complexTypes.createTypeScript({ prefix: 'ProjectName', rootTypeName: 'ProjectName' })).toMatchSnapshot()
-});
+  // empty object
+  complexTypesExamples.push({ empty: {} })
 
-test('Union types for root definition for TypeScript', () => {
-  const unionRoot = new Typewriter()
-  unionRoot.addDocument({ foo: 'bar' })
-  unionRoot.addDocument(['c', 'b', 'c'])
-  expect(unionRoot.createInlinedTypeScript()).toMatchSnapshot()
-  expect(unionRoot.createTypeScript({ prefix: 'ProjectName' })).toMatchSnapshot()
-});
+  const complexTypes = new Typewriter()
+  complexTypes.add(complexTypesExamples)
 
-test('Simple test for Vue.js validation', () => {
-  expect(simpleTypes.createVueValidation()).toMatchSnapshot()
-});
+  test('Complex test for TypeScript', () => {
+    expect(complexTypes.generate('typescript', { inlined: true })).toMatchSnapshot()
+    expect(complexTypes.generate('typescript')).toMatchSnapshot()
+  })
 
-test('Complex test for Vue.js validation', () => {
-  expect(complexTypes.createVueValidation()).toMatchSnapshot()
-});
+  test('Union types for root definition for TypeScript', () => {
+    const unionRoot = new Typewriter()
+    unionRoot.add([{ foo: 'bar' }, ['c', 'b', 'c']])
+    expect(unionRoot.generate('typescript', { inlined: true })).toMatchSnapshot()
+    expect(unionRoot.generate('typescript')).toMatchSnapshot()
+  })
 
-test('Simple test for PropTypes', () => {
-  expect(simpleTypes.createPropTypes('MyComponent.propTypes ')).toMatchSnapshot()
-});
-
-test('Complex test for PropTypes', () => {
-  expect(complexTypes.createPropTypes('MyComponent.propTypes ')).toMatchSnapshot()
-  console.log(JSON.stringify(complexTypes.types, null, 2))
-});
-
-test('Empty object for PropTypes', () => {
-  const emptyObject = new Typewriter()
-  emptyObject.addDocument({})
-  expect(emptyObject.createPropTypes('MyComponent.propTypes ')).toMatchSnapshot()
-});
-
-test('Named types', () => {
-  const namedTypes = new Typewriter()
-  namedTypes.addDocument({ payload: { issue: { title: 'Issue titlle' }} }, { 'payload.issue': 'Issue' })
-  expect(namedTypes.createTypeScript({ prefix: 'ProjectName', rootTypeName: 'ProjectName' })).toMatchSnapshot()
-});
-
+  test('Complex test for PropTypes', () => {
+    expect(complexTypes.generate('propTypes', { inlined: true })).toMatchSnapshot()
+    expect(complexTypes.generate('propTypes')).toMatchSnapshot()
+  })
+})

@@ -1,31 +1,55 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Complex test for PropTypes 1`] = `
-"{
-  foo: PropTypes.oneOfType([
+exports[`Complex types Complex test for PropTypes 1`] = `
+"PropTypes.shape({
+  foo: PropTypes.oneOfType(
     PropTypes.string,
     PropTypes.number,
     PropTypes.bool,
-    PropTypes.arrayOf(
-      PropTypes.oneOfType([PropTypes.number, PropTypes.string])
-    ),
+    PropTypes.arrayOf(PropTypes.oneOfType(PropTypes.number, PropTypes.string)),
     PropTypes.func,
     PropTypes.shape({
       mandatory: PropTypes.bool.isRequired,
       bar: PropTypes.string,
       hello: PropTypes.string
     })
-  ]),
+  ),
   bax: PropTypes.arrayOf(PropTypes.string),
   bar: PropTypes.array,
   mixed: PropTypes.arrayOf(
-    PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+    PropTypes.oneOfType(PropTypes.number, PropTypes.string)
   ),
-  empty: PropTypes.object
-}"
+  empty: PropTypes.shape({})
+})"
 `;
 
-exports[`Complex test for TypeScript 1`] = `
+exports[`Complex types Complex test for PropTypes 2`] = `
+"const Root = PropTypes.shape({
+  foo: RootFoo,
+  bax: PropTypes.arrayOf(PropTypes.string),
+  bar: PropTypes.array,
+  mixed: PropTypes.arrayOf(
+    PropTypes.oneOfType(PropTypes.number, PropTypes.string)
+  ),
+  empty: RootEmpty
+})
+const RootFoo = PropTypes.oneOfType(
+  PropTypes.string,
+  PropTypes.number,
+  PropTypes.bool,
+  PropTypes.arrayOf(PropTypes.oneOfType(PropTypes.number, PropTypes.string)),
+  PropTypes.func,
+  PropTypes.shape({
+    mandatory: PropTypes.bool.isRequired,
+    bar: PropTypes.string,
+    hello: PropTypes.string
+  })
+)
+const RootEmpty = PropTypes.shape({})
+"
+`;
+
+exports[`Complex types Complex test for TypeScript 1`] = `
 "{
   foo?:
     | null
@@ -46,100 +70,63 @@ exports[`Complex test for TypeScript 1`] = `
 }"
 `;
 
-exports[`Complex test for TypeScript 2`] = `
-"type ProjectNameFoo = {
-  mandatory: boolean,
-  bar?: string,
-  hello?: string
-}
-
-type ProjectNameEmpty = {}
-
-type ProjectName = {
-  foo?:
-    | null
-    | string
-    | number
-    | boolean
-    | Array<number | string>
-    | { (): any }
-    | ProjectNameFoo,
+exports[`Complex types Complex test for TypeScript 2`] = `
+"type Root = {
+  foo?: RootFoo,
   bax?: Array<string>,
   bar?: Array<any>,
   mixed?: Array<number | string>,
-  empty?: ProjectNameEmpty
+  empty?: RootEmpty
 }
+type RootFoo =
+  | null
+  | string
+  | number
+  | boolean
+  | Array<number | string>
+  | { (): any }
+  | {
+      mandatory: boolean,
+      bar?: string,
+      hello?: string
+    }
+type RootEmpty = {}
 "
 `;
 
-exports[`Complex test for Vue.js validation 1`] = `
-"{
-  foo: [String, Number, Boolean, Array, Function, Object],
-  bax: Array,
-  bar: Array,
-  mixed: Array,
-  empty: Object
-}"
-`;
+exports[`Complex types Union types for root definition for TypeScript 1`] = `"{ foo: string } | Array<string>"`;
 
-exports[`Empty object for PropTypes 1`] = `""`;
-
-exports[`Named types 1`] = `
-"type ProjectNamePayloadIssue = {
-  title: string
-}
-
-type ProjectNamePayload = {
-  issue: ProjectNamePayloadIssue
-}
-
-type ProjectName = {
-  payload: ProjectNamePayload
-}
+exports[`Complex types Union types for root definition for TypeScript 2`] = `
+"type Root = { foo: string } | Array<string>
 "
 `;
 
-exports[`Simple test for PropTypes 1`] = `
-"{
+exports[`Simple types Simple test for PropTypes 1`] = `
+"PropTypes.shape({
   \\"first name\\": PropTypes.string.isRequired,
   \\"last name\\": PropTypes.string
-}"
+})"
 `;
 
-exports[`Simple test for TypeScript 1`] = `
-"{
-  \\"first name\\": string,
-  \\"last name\\"?: string
-}"
-`;
-
-exports[`Simple test for TypeScript 2`] = `
-"type ProjectName = {
-  \\"first name\\": string,
-  \\"last name\\"?: string
-}
+exports[`Simple types Simple test for PropTypes 2`] = `
+"const Root = PropTypes.shape({
+  \\"first name\\": PropTypes.string.isRequired,
+  \\"last name\\": PropTypes.string
+})
 "
 `;
 
-exports[`Simple test for Vue.js validation 1`] = `
+exports[`Simple types Simple test for TypeScript 1`] = `
 "{
-  \\"first name\\": { type: String, required: true },
-  \\"last name\\": String
+  \\"first name\\": string,
+  \\"last name\\"?: string
 }"
 `;
 
-exports[`Union types for root definition for TypeScript 1`] = `
-"| {
-      foo: string
-    }
-  | Array<string>"
-`;
-
-exports[`Union types for root definition for TypeScript 2`] = `
-"type ProjectName = {
-  foo: string
+exports[`Simple types Simple test for TypeScript 2`] = `
+"type Root = {
+  \\"first name\\": string,
+  \\"last name\\"?: string
 }
-
-type Root = ProjectName | Array<string>
 "
 `;

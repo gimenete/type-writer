@@ -6,22 +6,132 @@ const defaultPrettierOptions = {
   semi: false
 }
 
+class GeneratorContext {
+  constructor(keypaths, typeNames) {
+    this.keypaths = keypaths
+    this.typeNames = typeNames
+  }
+
+  inlinedCode(code, prettierOptions, prefix = 'const foo =') {
+    let formatted = prettier.format(prefix + code, prettierOptions)
+    formatted = formatted.substring(prefix.length).trim()
+    if (formatted.endsWith(';')) return formatted.substring(0, formatted.length - 1)
+    return formatted
+  }
+}
+
+const generators = {
+  typescript: (ctx, options = {}) => {
+    const { inlined } = options
+    const prettierOptions = { ...options.prettier, ...defaultPrettierOptions }
+    const codeForKeyPath = keypath => {
+      const keypathValue = ctx.keypaths[keypath]
+      if (!keypathValue) return 'any'
+      return Object.entries(keypathValue)
+        .map(([type, value]) => codeForValue(type, value))
+        .join('|')
+    }
+    const codeForValue = (type, value) => {
+      if (type === 'array') {
+        return `Array<${codeForKeyPath(value['[]'].keypath)}>`
+      }
+      if (type === 'object') {
+        return `{${Object.entries(value)
+          .map(([fieldName, fieldValue]) => {
+            const required = fieldValue.required ? '' : '?'
+            const value = inlined
+              ? codeForKeyPath(fieldValue.keypath)
+              : ctx.typeNames.has(fieldValue.keypath)
+                ? fieldValue.keypath
+                : codeForKeyPath(fieldValue.keypath)
+            return `"${fieldName}"${required}: ${value}`
+          })
+          .join(',\n')}}`
+      }
+      if (type === 'function') {
+        return '{ (): any }'
+      }
+      return type
+    }
+    if (inlined) {
+      return ctx.inlinedCode(codeForKeyPath(inlined), prettierOptions, 'type Foo =')
+    } else {
+      let code = Array.from(ctx.typeNames)
+        .map(name => `type ${name} = ${codeForKeyPath(name)}`)
+        .join('\n')
+      return prettier.format(code, prettierOptions)
+    }
+  },
+  propTypes: (ctx, options = {}) => {
+    const { inlined } = options
+    const prettierOptions = { ...options.prettier, ...defaultPrettierOptions }
+    const codeForKeyPath = keypath => {
+      const keypathValue = ctx.keypaths[keypath]
+      if (!keypathValue) return 'any'
+      const types = Object.entries(keypathValue)
+        .map(([type, value]) => codeForValue(type, value))
+        .filter(code => code !== 'null' && code !== 'undefined')
+      return types.length > 1 ? `PropTypes.oneOfType(${types.join(',')})` : types[0]
+    }
+    const codeForValue = (type, value) => {
+      if (type === 'array') {
+        const arrayType = codeForKeyPath(value['[]'].keypath)
+        if (arrayType === 'any') return 'PropTypes.array'
+        return `PropTypes.arrayOf(${arrayType})`
+      }
+      if (['string', 'number', 'symbol'].includes(type)) {
+        return `PropTypes.${type}`
+      }
+      if (type === 'boolean') {
+        return 'PropTypes.bool'
+      }
+      if (type === 'object') {
+        return `PropTypes.shape({${Object.entries(value)
+          .map(([fieldName, fieldValue]) => {
+            const required = fieldValue.required ? '.isRequired' : ''
+            const value = inlined
+              ? codeForKeyPath(fieldValue.keypath)
+              : ctx.typeNames.has(fieldValue.keypath)
+                ? fieldValue.keypath
+                : codeForKeyPath(fieldValue.keypath)
+            return `"${fieldName}": ${value}${required}`
+          })
+          .join(',\n')}})`
+      }
+      if (type === 'function') {
+        return 'PropTypes.func'
+      }
+      return type
+    }
+    if (inlined) {
+      return ctx.inlinedCode(codeForKeyPath(inlined), prettierOptions, 'const Foo =')
+    } else {
+      let code = Array.from(ctx.typeNames)
+        .map(name => `const ${name} = ${codeForKeyPath(name)}`)
+        .join('\n')
+      return prettier.format(code, prettierOptions)
+    }
+  }
+}
+
 class Typewriter {
   constructor() {
     this.keypaths = {}
+    this.typeNames = new Set()
   }
 
-  add(examples, options) {
+  add(examples, options = {}) {
     options = this._cleanUpOptions(options)
+    const rootType = this._calculateTypeName('', options)
     for (const example of examples) {
-      this._traverseExample('', example, options)
+      this._traverseExample(rootType, example, options)
     }
-    return this._calculateTypeName('', options)
+    this.lastRootType = rootType
+    return rootType
   }
 
   _traverseExample(keypath, data, options) {
-    keypath = this._calculateTypeName(keypath, options) || keypath
-
+    keypath = this._calculateTypeName(keypath, options)
     let type = typeof data
     let paths = {}
     if (type === 'object') {
@@ -29,9 +139,12 @@ class Typewriter {
         type = 'null'
       } else if (Array.isArray(data)) {
         type = 'array'
-        paths = { '[]': { keypath: keypath + '[]', required: true } }
+        paths = {
+          '[]': { keypath: this._calculateTypeName(keypath + '[]', options), required: true }
+        }
         data.map(value => this._traverseExample(keypath + '[]', value, options))
       } else {
+        this.typeNames.add(keypath)
         Object.keys(data).forEach(
           key =>
             (paths[key] = {
@@ -55,7 +168,7 @@ class Typewriter {
       })
       Object.keys(paths).forEach(key => {
         if (!currentKeypath[key]) {
-          currentKeypath[key].required = false
+          currentKeypath[key] = { ...paths[key], required: false }
         }
       })
     } else {
@@ -84,84 +197,17 @@ class Typewriter {
     return keypath === '' ? name || rootTypeName || 'Root' : name
   }
 
-  _typeNames() {
-    return Object.keys(this.keypaths).filter(keypath => keypath.indexOf('.') === -1)
-  }
-
-  createTypeScript(options = {}) {
-    const prettierOptions = { ...options.prettier, ...defaultPrettierOptions }
-    const codeForKeyPath = keypath => {
-      const keypathValue = this.keypaths[keypath]
-      return Object.entries(keypathValue)
-        .map(([type, value]) => codeForValue(keypath, type, value))
-        .join('|')
+  generate(generatorName, options = {}) {
+    const ctx = new GeneratorContext(this.keypaths, this.typeNames)
+    if (options.inlined === true) {
+      options = { ...options, inlined: this.lastRootType }
     }
-    const codeForValue = (keypath, type, value) => {
-      if (type === 'array') {
-        return `Array<${codeForKeyPath(value['[]'].keypath)}>`
-      }
-      if (type === 'object') {
-        return `{${Object.entries(value)
-          .map(([fieldName, fieldValue]) => {
-            const required = fieldValue.required ? '' : '?'
-            const value =
-              fieldValue.keypath.indexOf('.') === -1
-                ? fieldValue.keypath
-                : codeForKeyPath(fieldValue.keypath)
-            return `"${fieldName}"${required}: ${value}`
-          })
-          .join(',\n')}}`
-      }
-      if (type === 'function') {
-        return '{ (): any }'
-      }
-      return type
-    }
-    let code = this._typeNames()
-      .map(name => `type ${name} = ${codeForKeyPath(name)}`)
-      .join('\n')
-    return prettier.format(code, prettierOptions)
-  }
-
-  createInlinedTypeScript(rootType, options = {}) {
-    const prettierOptions = { ...options.prettier, ...defaultPrettierOptions }
-    const codeForKeyPath = keypath => {
-      const keypathValue = this.keypaths[keypath]
-      return Object.entries(keypathValue)
-        .map(([type, value]) => codeForValue(keypath, type, value))
-        .join('|')
-    }
-    const codeForValue = (keypath, type, value) => {
-      if (type === 'array') {
-        return `Array<${codeForKeyPath(value['[]'].keypath)}>`
-      }
-      if (type === 'object') {
-        return `{${Object.entries(value)
-          .map(([fieldName, fieldValue]) => {
-            const required = fieldValue.required ? '' : '?'
-            const value = codeForKeyPath(fieldValue.keypath)
-            return `"${fieldName}"${required}: ${value}`
-          })
-          .join(',\n')}}`
-      }
-      if (type === 'function') {
-        return '{ (): any }'
-      }
-      return type
-    }
-    return this._inlinedVersion(codeForKeyPath(rootType), prettierOptions, 'type Foo =')
-  }
-
-  _inlinedVersion(code, prettierOptions, prefix = 'const foo =') {
-    let formatted = prettier.format(prefix + code, prettierOptions)
-    formatted = formatted.substring(prefix.length).trim()
-    if (formatted.endsWith(';')) return formatted.substring(0, formatted.length - 1)
-    return formatted
+    return generators[generatorName](ctx, options)
   }
 }
 
 Typewriter.defaultTypeNameGenerator = keypath => {
-  const name = camelcase((this.prefix + ' ' + key).replace(/\[\]/g, 'Value'))
+  const name = camelcase(keypath.replace(/\[\]/g, 'Value'))
   return name.substring(0, 1).toUpperCase() + name.substring(1)
 }
 

@@ -5,56 +5,60 @@ Generate type definitions for TypeScript, Flow, PropTypes, etc. by using example
 ## Example
 
 ```javascript
-const tw = new Typewriter()
-tw.addDocument({ foo: 'bar' })
-tw.addDocument({ foo: 1 })
-tw.addDocument({ foo: [1, 2, 3] })
-console.log('# Inlined TypeScript')
-console.log(tw.createInlinedTypeScript())
-console.log()
+const TypeWriter = require('type-writer')
+const tw = new TypeWriter()
+const examples = []
+examples.push({ user: { name: 'Julia' }, foo: 'bar' })
+examples.push({ user: { name: 'Julia' }, foo: 1 })
+examples.push({ user: { name: 'Julia' }, foo: [1, 2, 3] })
+tw.add(examples, { rootTypeName: 'ProjectName' })
 console.log('# TypeScript')
-console.log(tw.createTypeScript('Project'))
+console.log(tw.generate('typescript'))
 console.log()
-console.log('# Vue.js validation')
-console.log(tw.createVueValidation())
+console.log('# Inlined TypeScript')
+console.log(tw.generate('typescript', { inlined: true }))
+console.log()
+console.log('# Inlined PropTypes')
+console.log(tw.generate('propTypes', { inlined: true }))
 console.log()
 console.log('# PropTypes')
-console.log(tw.createPropTypes('MyComponent.propTypes'))
+console.log(tw.generate('propTypes'))
 console.log()
 ```
 
 Output:
 
 ```
-# Inlined TypeScript
-{
+# TypeScript
+type ProjectNameUser = { name: string }type ProjectName = {
+  user: ProjectNameUser,
   foo: string | number | Array<number>
 }
 
-# TypeScript
-interface IProject {
-  foo: string | number | Array<number>;
-}
 
-export type Project = IProject
-
-
-# Vue.js validation
+# Inlined TypeScript
 {
-  foo: [
-    { type: String, required: true },
-    { type: Number, required: true },
-    { type: Array, required: true }
-  ]
+  user: { name: string },
+  foo: string | number | Array<number>
 }
 
+# Inlined PropTypes
+PropTypes.shape({
+  user: PropTypes.shape({ name: PropTypes.string.isRequired }).isRequired,
+  foo: PropTypes.oneOfType(
+    PropTypes.string,
+    PropTypes.number,    PropTypes.arrayOf(PropTypes.number)
+  ).isRequired
+})
 
 # PropTypes
-MyComponent.propTypes = {
-  foo: PropTypes.oneOfType([
+const ProjectNameUser = PropTypes.shape({ name: PropTypes.string.isRequired })
+const ProjectName = PropTypes.shape({
+  user: ProjectNameUser.isRequired,
+  foo: PropTypes.oneOfType(
     PropTypes.string,
     PropTypes.number,
     PropTypes.arrayOf(PropTypes.number)
-  ]).isRequired
-}
+  ).isRequired
+})
 ```

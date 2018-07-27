@@ -1,7 +1,7 @@
-const Typewriter = require('./')
+const TypeWriter = require('./')
 
 describe('Simple types', () => {
-  const simpleTypes = new Typewriter()
+  const simpleTypes = new TypeWriter()
   simpleTypes.add([{ 'first name': 'Marie', 'last name': 'Curie' }, { 'first name': 'Ada' }])
 
   test('Simple test for TypeScript', () => {
@@ -37,20 +37,34 @@ describe('Complex types', () => {
   complexTypesExamples.push({ bar: [] })
   // mixed array
   complexTypesExamples.push({ mixed: [1, 2, 'a', 'b'] })
+  // array with complex values
+  complexTypesExamples.push({ arr: [{ mandatory: true, bar: 'baz' }] })
+  complexTypesExamples.push({ arr: [{ mandatory: true, hello: 'world' }] })
 
   // empty object
   complexTypesExamples.push({ empty: {} })
 
-  const complexTypes = new Typewriter()
+  const complexTypes = new TypeWriter()
   complexTypes.add(complexTypesExamples)
+
+  const rootArrayExamples = []
+  rootArrayExamples.push([{ foo: 'string', bar: 'baz' }, { foo: 'string' }])
+
+  const rootTypes = new TypeWriter()
+  rootTypes.add(rootArrayExamples)
 
   test('Complex test for TypeScript', () => {
     expect(complexTypes.generate('typescript', { inlined: true })).toMatchSnapshot()
     expect(complexTypes.generate('typescript')).toMatchSnapshot()
   })
 
+  test('Root arrays for TypeScript', () => {
+    expect(rootTypes.generate('typescript', { inlined: true })).toMatchSnapshot()
+    expect(rootTypes.generate('typescript')).toMatchSnapshot()
+  })
+
   test('Union types for root definition for TypeScript', () => {
-    const unionRoot = new Typewriter()
+    const unionRoot = new TypeWriter()
     unionRoot.add([{ foo: 'bar' }, ['c', 'b', 'c']])
     expect(unionRoot.generate('typescript', { inlined: true })).toMatchSnapshot()
     expect(unionRoot.generate('typescript')).toMatchSnapshot()

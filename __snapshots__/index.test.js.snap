@@ -19,19 +19,17 @@ exports[`Complex types Complex test for PropTypes 1`] = `
   mixed: PropTypes.arrayOf(
     PropTypes.oneOfType(PropTypes.number, PropTypes.string)
   ),
+  arr: PropTypes.arrayOf(RootArrItem),
   empty: PropTypes.shape({})
 })"
 `;
 
 exports[`Complex types Complex test for PropTypes 2`] = `
-"const Root = PropTypes.shape({
-  foo: RootFoo,
-  bax: PropTypes.arrayOf(PropTypes.string),
-  bar: PropTypes.array,
-  mixed: PropTypes.arrayOf(
-    PropTypes.oneOfType(PropTypes.number, PropTypes.string)
-  ),
-  empty: RootEmpty
+"const RootEmpty = PropTypes.shape({})
+const RootArrItem = PropTypes.shape({
+  mandatory: PropTypes.bool.isRequired,
+  bar: PropTypes.string,
+  hello: PropTypes.string
 })
 const RootFoo = PropTypes.oneOfType(
   PropTypes.string,
@@ -45,7 +43,16 @@ const RootFoo = PropTypes.oneOfType(
     hello: PropTypes.string
   })
 )
-const RootEmpty = PropTypes.shape({})
+const Root = PropTypes.shape({
+  foo: RootFoo,
+  bax: PropTypes.arrayOf(PropTypes.string),
+  bar: PropTypes.array,
+  mixed: PropTypes.arrayOf(
+    PropTypes.oneOfType(PropTypes.number, PropTypes.string)
+  ),
+  arr: PropTypes.arrayOf(RootArrItem),
+  empty: RootEmpty
+})
 "
 `;
 
@@ -66,17 +73,17 @@ exports[`Complex types Complex test for TypeScript 1`] = `
   bax?: Array<string>,
   bar?: Array<any>,
   mixed?: Array<number | string>,
+  arr?: Array<RootArrItem>,
   empty?: {}
 }"
 `;
 
 exports[`Complex types Complex test for TypeScript 2`] = `
-"type Root = {
-  foo?: RootFoo,
-  bax?: Array<string>,
-  bar?: Array<any>,
-  mixed?: Array<number | string>,
-  empty?: RootEmpty
+"type RootEmpty = {}
+type RootArrItem = {
+  mandatory: boolean,
+  bar?: string,
+  hello?: string
 }
 type RootFoo =
   | null
@@ -90,7 +97,25 @@ type RootFoo =
       bar?: string,
       hello?: string
     }
-type RootEmpty = {}
+type Root = {
+  foo?: RootFoo,
+  bax?: Array<string>,
+  bar?: Array<any>,
+  mixed?: Array<number | string>,
+  arr?: Array<RootArrItem>,
+  empty?: RootEmpty
+}
+"
+`;
+
+exports[`Complex types Root arrays for TypeScript 1`] = `"Array<RootItem>"`;
+
+exports[`Complex types Root arrays for TypeScript 2`] = `
+"type RootItem = {
+  foo: string,
+  bar?: string
+}
+type Root = Array<RootItem>
 "
 `;
 

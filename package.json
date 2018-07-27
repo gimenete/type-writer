@@ -1,5 +1,5 @@
 {
-  "name": "type-writer",
+  "name": "@gimenete/type-writer",
   "version": "0.1.0",
   "description": "Generate type definitions for TypeScript, Flow, PropTypes, etc. by using examples of the data",
   "main": "index.js",

@@ -2,10 +2,18 @@
 
 Generate type definitions for TypeScript, Flow, PropTypes, etc. by using examples of the data
 
+## Installing
+
+```
+npm install @gimenete/type-writer
+# or
+yarn add @gimenete/type-writer
+```
+
 ## Example
 
 ```javascript
-const TypeWriter = require('type-writer')
+const TypeWriter = require('@gimenete/type-writer')
 const tw = new TypeWriter()
 const examples = []
 examples.push({ user: { name: 'Julia' }, foo: 'bar' })

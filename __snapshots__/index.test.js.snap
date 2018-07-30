@@ -170,3 +170,9 @@ exports[`Simple types Simple test for TypeScript 2`] = `
 }
 "
 `;
+
+exports[`Unused named key paths returns a list of similar types 1`] = `
+Array [
+  "Foo.nope",
+]
+`;

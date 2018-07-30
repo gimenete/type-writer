@@ -119,10 +119,15 @@ class TypeWriter {
     this.keypaths = {}
     this.typeNames = []
     this.typeNamesSource = {}
+    this.allNamedKeyPaths = new Set()
+    this.usedNamedKeyPaths = new Set()
   }
 
   add(examples, options = {}) {
     options = this._cleanUpOptions(options)
+    for (let namedKeyPath of Object.keys(options.namedKeyPaths)) {
+      this.allNamedKeyPaths.add(namedKeyPath)
+    }
     const rootType = this._calculateTypeName('', options)
     this.lastRootType = rootType
     for (const example of examples) {
@@ -217,7 +222,12 @@ class TypeWriter {
 
   _calculateTypeName(keypath, options) {
     const { namedKeyPaths, typeNameGenerator, rootTypeName } = options
-    const name = namedKeyPaths[keypath] || typeNameGenerator(keypath)
+    let name = namedKeyPaths[keypath]
+    if (name) {
+      this.usedNamedKeyPaths.add(keypath)
+    } else {
+      name = typeNameGenerator(keypath)
+    }
     return keypath === '' ? name || rootTypeName || 'Root' : name
   }
 
@@ -248,6 +258,10 @@ class TypeWriter {
       }
     }
     return list
+  }
+
+  unusedNamedKeyPaths() {
+    return [...this.allNamedKeyPaths].filter(x => !this.usedNamedKeyPaths.has(x))
   }
 }
 

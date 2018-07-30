@@ -104,3 +104,17 @@ describe('Find similar types', () => {
     expect(similarTypes.findSimilarTypes()).toMatchSnapshot()
   })
 })
+
+describe('Unused named key paths', () => {
+  test('returns a list of similar types', () => {
+    const unusedKeyPaths = new TypeWriter({ strict: true })
+    unusedKeyPaths.add([{ user: { 'first name': 'Marie', 'last name': 'Curie' } }], {
+      rootTypeName: 'Foo',
+      namedKeyPaths: {
+        'Foo.user': 'User',
+        'Foo.nope': 'Nope'
+      }
+    })
+    expect(unusedKeyPaths.unusedNamedKeyPaths()).toMatchSnapshot()
+  })
+})

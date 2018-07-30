@@ -1,5 +1,6 @@
 const prettier = require('prettier')
 const camelcase = require('camelcase')
+const assert = require('assert')
 
 const defaultPrettierOptions = {
   parser: 'babylon',
@@ -226,6 +227,27 @@ class TypeWriter {
       options = { ...options, inlined: this.lastRootType }
     }
     return generators[generatorName](ctx, options)
+  }
+
+  findSimilarTypes() {
+    const list = []
+    const replacer = (key, value) => (key === 'keypath' ? '' : value)
+    const simpleCopy = definition => JSON.parse(JSON.stringify(definition, replacer))
+    for (let i = 0; i < this.typeNames.length; i++) {
+      const typeName = this.typeNames[i]
+      for (let j = i + 1; j < this.typeNames.length; j++) {
+        const otherTypeName = this.typeNames[j]
+        // Simple way of copying the objects ignoring the "keypath" key
+        const definitionA = simpleCopy(this.keypaths[typeName])
+        const definitionB = simpleCopy(this.keypaths[otherTypeName])
+
+        try {
+          assert.deepEqual(definitionA, definitionB)
+          list.push([typeName, otherTypeName])
+        } catch (err) {}
+      }
+    }
+    return list
   }
 }
 

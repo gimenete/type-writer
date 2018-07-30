@@ -126,6 +126,19 @@ exports[`Complex types Union types for root definition for TypeScript 2`] = `
 "
 `;
 
+exports[`Find similar types returns a list of similar types 1`] = `
+Array [
+  Array [
+    "BarUser",
+    "FooUser",
+  ],
+  Array [
+    "Bar",
+    "Foo",
+  ],
+]
+`;
+
 exports[`Prevent redefinitions Prevent a redefinition with strict mode 1`] = `"The type \\"User\\" was defined at \\"A\\" and it's being modified at \\"B\\". Attribute \\"last name\\" is no longer required"`;
 
 exports[`Simple types Simple test for PropTypes 1`] = `

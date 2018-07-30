@@ -91,3 +91,16 @@ describe('Prevent redefinitions', () => {
     }).toThrowErrorMatchingSnapshot()
   })
 })
+
+describe('Find similar types', () => {
+  test('returns a list of similar types', () => {
+    const similarTypes = new TypeWriter({ strict: true })
+    similarTypes.add([{ user: { 'first name': 'Marie', 'last name': 'Curie' } }], {
+      rootTypeName: 'Foo'
+    })
+    similarTypes.add([{ user: { 'first name': 'John', 'last name': 'Smith' } }], {
+      rootTypeName: 'Bar'
+    })
+    expect(similarTypes.findSimilarTypes()).toMatchSnapshot()
+  })
+})

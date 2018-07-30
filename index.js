@@ -7,6 +7,20 @@ const defaultPrettierOptions = {
   semi: false
 }
 
+const deepEqual = (a, b) => {
+  try {
+    assert.deepEqual(a, b)
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+const replacer = (key, value) => (key === 'keypath' ? undefined : value)
+
+// Simple way of copying the objects ignoring the "keypath" key
+const simpleCopy = definition => JSON.parse(JSON.stringify(definition, replacer))
+
 class GeneratorContext {
   constructor(keypaths, typeNames) {
     this.keypaths = keypaths
@@ -239,25 +253,30 @@ class TypeWriter {
     return generators[generatorName](ctx, options)
   }
 
-  findSimilarTypes() {
+  _findSimilarTypes(typeName, arr) {
     const list = []
-    const replacer = (key, value) => (key === 'keypath' ? '' : value)
-    const simpleCopy = definition => JSON.parse(JSON.stringify(definition, replacer))
-    for (let i = 0; i < this.typeNames.length; i++) {
-      const typeName = this.typeNames[i]
-      for (let j = i + 1; j < this.typeNames.length; j++) {
-        const otherTypeName = this.typeNames[j]
-        // Simple way of copying the objects ignoring the "keypath" key
-        const definitionA = simpleCopy(this.keypaths[typeName])
-        const definitionB = simpleCopy(this.keypaths[otherTypeName])
-
-        try {
-          assert.deepEqual(definitionA, definitionB)
-          list.push([typeName, otherTypeName])
-        } catch (err) {}
+    const definition = this.keypaths[typeName]
+    if (!definition) return list
+    if (Object.keys(definition).length === 1 && definition['array']) return list
+    const definitionA = simpleCopy(definition)
+    if (deepEqual(definitionA, { object: {} })) return list
+    for (const otherTypeName of arr) {
+      if (!this.keypaths[otherTypeName]) continue
+      const definitionB = simpleCopy(this.keypaths[otherTypeName])
+      if (deepEqual(definitionA, definitionB)) {
+        list.push([typeName, otherTypeName])
       }
     }
     return list
+  }
+
+  findSimilarTypes(typeName) {
+    if (typeName) {
+      return this._findSimilarTypes(typeName, this.typeNames.filter(name => name !== typeName))
+    }
+    return this.typeNames.reduce((list, typeName, i) => {
+      return list.concat(this._findSimilarTypes(typeName, this.typeNames.slice(i + 1)))
+    }, [])
   }
 
   unusedNamedKeyPaths() {

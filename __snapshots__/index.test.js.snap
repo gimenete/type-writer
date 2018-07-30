@@ -126,6 +126,8 @@ exports[`Complex types Union types for root definition for TypeScript 2`] = `
 "
 `;
 
+exports[`Prevent redefinitions Prevent a redefinition with strict mode 1`] = `"The type \\"User\\" was defined at \\"A\\" and it's being modified at \\"B\\". Attribute \\"last name\\" is no longer required"`;
+
 exports[`Simple types Simple test for PropTypes 1`] = `
 "PropTypes.shape({
   \\"first name\\": PropTypes.string.isRequired,

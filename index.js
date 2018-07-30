@@ -113,27 +113,31 @@ const generators = {
 }
 
 class TypeWriter {
-  constructor() {
+  constructor(options = {}) {
+    this.typeWriterOptions = options
     this.keypaths = {}
     this.typeNames = []
+    this.typeNamesSource = {}
   }
 
   add(examples, options = {}) {
     options = this._cleanUpOptions(options)
     const rootType = this._calculateTypeName('', options)
+    this.lastRootType = rootType
     for (const example of examples) {
       this._traverseExample(rootType, example, options)
     }
-    this.lastRootType = rootType
     // If the root is an array we don't want to miss the root type
     if (this.typeNames.indexOf(rootType) === -1) this.typeNames.push(rootType)
     return rootType
   }
 
   _traverseExample(keypath, data, options) {
+    const { strict } = this.typeWriterOptions
     keypath = this._calculateTypeName(keypath, options)
     let type = typeof data
     let paths = {}
+    let isRedefinition = false
     if (type === 'object') {
       if (data === null) {
         type = 'null'
@@ -144,7 +148,12 @@ class TypeWriter {
         }
         data.map(value => this._traverseExample(keypath + '[]', value, options))
       } else {
-        if (this.typeNames.indexOf(keypath) === -1) this.typeNames.unshift(keypath)
+        if (this.typeNames.indexOf(keypath) === -1) {
+          this.typeNamesSource[keypath] = this.lastRootType
+          this.typeNames.unshift(keypath)
+        } else if (this.typeNamesSource[keypath] !== this.lastRootType) {
+          isRedefinition = true
+        }
         Object.keys(data).forEach(
           key =>
             (paths[key] = {
@@ -158,16 +167,30 @@ class TypeWriter {
         )
       }
     }
+
+    const throwIfInvalidRedefinition = key => {
+      if (!isRedefinition) return
+      if (!strict) return
+      const source = this.typeNamesSource[keypath]
+      throw new Error(
+        `The type "${keypath}" was defined at "${source}" and it's being modified at "${
+          this.lastRootType
+        }". Attribute "${key}" is no longer required`
+      )
+    }
+
     const current = this.keypaths[keypath] || {}
     const currentKeypath = current[type]
     if (currentKeypath) {
       Object.keys(currentKeypath).forEach(key => {
         if (!paths[key]) {
+          throwIfInvalidRedefinition(key)
           currentKeypath[key].required = false
         }
       })
       Object.keys(paths).forEach(key => {
         if (!currentKeypath[key]) {
+          throwIfInvalidRedefinition(key)
           currentKeypath[key] = { ...paths[key], required: false }
         }
       })

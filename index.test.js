@@ -75,3 +75,19 @@ describe('Complex types', () => {
     expect(complexTypes.generate('propTypes')).toMatchSnapshot()
   })
 })
+
+describe('Prevent redefinitions', () => {
+  test('Prevent a redefinition with strict mode', () => {
+    const strictMode = new TypeWriter({ strict: true })
+    strictMode.add([{ user: { 'first name': 'Marie', 'last name': 'Curie' } }], {
+      rootTypeName: 'A',
+      namedKeyPaths: { 'A.user': 'User' }
+    })
+    expect(() => {
+      strictMode.add([{ user: { 'first name': 'Ada' } }], {
+        rootTypeName: 'B',
+        namedKeyPaths: { 'B.user': 'User' }
+      })
+    }).toThrowErrorMatchingSnapshot()
+  })
+})

@@ -62,6 +62,7 @@ const generators = {
               : codeOrTypeName(fieldValue.keypath)
             return `"${fieldName}"${required}: ${value}`
           })
+          .sort()
           .join(',\n')}}`
       }
       if (type === 'function') {
@@ -72,7 +73,7 @@ const generators = {
     if (inlined) {
       return ctx.inlinedCode(codeForKeyPath(inlined), prettierOptions, 'type Foo =')
     } else {
-      let code = ctx.typeNames.map(name => `type ${name} = ${codeForKeyPath(name)}`).join('\n')
+      let code = ctx.typeNames.map(name => `type ${name} = ${codeForKeyPath(name)}`).sort().join('\n')
       return prettier.format(code, prettierOptions)
     }
   },

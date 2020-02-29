@@ -3,7 +3,7 @@ const camelcase = require('camelcase')
 const assert = require('assert')
 
 const defaultPrettierOptions = {
-  parser: 'babylon',
+  parser: 'babel',
   semi: false
 }
 

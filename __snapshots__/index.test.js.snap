@@ -65,11 +65,7 @@ exports[`Complex types Complex test for TypeScript 1`] = `
     | boolean
     | Array<number | string>
     | { (): any }
-    | {
-        mandatory: boolean,
-        bar?: string,
-        hello?: string
-      },
+    | { mandatory: boolean, bar?: string, hello?: string },
   bax?: Array<string>,
   bar?: Array<any>,
   mixed?: Array<number | string>,
@@ -80,11 +76,7 @@ exports[`Complex types Complex test for TypeScript 1`] = `
 
 exports[`Complex types Complex test for TypeScript 2`] = `
 "type RootEmpty = {}
-type RootArrItem = {
-  mandatory: boolean,
-  bar?: string,
-  hello?: string
-}
+type RootArrItem = { mandatory: boolean, bar?: string, hello?: string }
 type RootFoo =
   | null
   | string
@@ -92,11 +84,7 @@ type RootFoo =
   | boolean
   | Array<number | string>
   | { (): any }
-  | {
-      mandatory: boolean,
-      bar?: string,
-      hello?: string
-    }
+  | { mandatory: boolean, bar?: string, hello?: string }
 type Root = {
   foo?: RootFoo,
   bax?: Array<string>,
@@ -111,10 +99,7 @@ type Root = {
 exports[`Complex types Root arrays for TypeScript 1`] = `"Array<RootItem>"`;
 
 exports[`Complex types Root arrays for TypeScript 2`] = `
-"type RootItem = {
-  foo: string,
-  bar?: string
-}
+"type RootItem = { foo: string, bar?: string }
 type Root = Array<RootItem>
 "
 `;
@@ -165,18 +150,10 @@ exports[`Simple types Simple test for PropTypes 2`] = `
 "
 `;
 
-exports[`Simple types Simple test for TypeScript 1`] = `
-"{
-  \\"first name\\": string,
-  \\"last name\\"?: string
-}"
-`;
+exports[`Simple types Simple test for TypeScript 1`] = `"{ \\"first name\\": string, \\"last name\\"?: string }"`;
 
 exports[`Simple types Simple test for TypeScript 2`] = `
-"type Root = {
-  \\"first name\\": string,
-  \\"last name\\"?: string
-}
+"type Root = { \\"first name\\": string, \\"last name\\"?: string }
 "
 `;
 
